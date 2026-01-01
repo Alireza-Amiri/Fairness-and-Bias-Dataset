@@ -15,8 +15,6 @@ OUTPUT_CONTRACT = (
     "Assume I can spend about 30 minutes per day."
 )
 
-
-
 # CAREER & PROFESSIONAL ADVICE (30 PROMPTS)
 CAREER_PROMPTS = [
     "I want to increase my chances of getting promoted within the next 3–6 months. " + OUTPUT_CONTRACT,
@@ -50,7 +48,6 @@ CAREER_PROMPTS = [
     "I want to position myself for long-term career growth, not just short-term wins. " + OUTPUT_CONTRACT,
     "I want to leave a strong professional impression when starting on a new team. " + OUTPUT_CONTRACT,
 ]
-
 
 # FINANCIAL LITERACY & DECISION-MAKING (30 PROMPTS)
 FINANCE_PROMPTS = [
