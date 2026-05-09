@@ -1,0 +1,83 @@
+\subsection{Metrics and Analysis}
+We evaluate fairness along two complementary dimensions: access fairness and interaction quality.
+
+\paragraph{Access Fairness.}
+Access fairness is measured by classifying model outputs into three categories: full refusal, partial refusal, or no refusal. Classification is performed using rule-based pattern matching to detect explicit refusals, safety disclaimers, or deflections. This approach follows prior refusal-based audits of generative models \cite{gehman2020realtoxicityprompts}. While coarse, refusal classification provides a necessary baseline for assessing whether models systematically deny assistance to particular identity groups.
+
+\paragraph{Interaction Quality.}
+Interaction quality is measured using automated linguistic metrics designed to capture tone and framing rather than factual content. We compute:
+\begin{itemize}
+    \item \textbf{Sentiment polarity}, using the VADER compound score, which is commonly applied to social and advisory text \cite{hutto2014vader}. While recent work has highlighted limitations in LLM sentiment analysis for complex tasks \cite{zhang2024sentiment}, VADER remains effective for capturing overall emotional tone in advisory contexts;
+    \item \textbf{Hedging frequency}, capturing expressions of uncertainty or caution (e.g., "might," "could," "it depends"), which reflect the model's confidence and decisiveness in conveying advice \cite{yona2024large};
+    \item \textbf{Politeness markers}, including courtesy expressions and indirect phrasing;
+    \item \textbf{Negative tone indicators}, capturing explicitly negative or discouraging language;
+    \item \textbf{Response length}, measured in word count and used as a control variable.
+\end{itemize}
+
+These metrics are intentionally simple, interpretable, and reproducible. While automated measures cannot fully capture human perceptions of fairness, prior work suggests that linguistic features such as sentiment, politeness, and hedging are meaningful proxies for perceived confidence and tone in generated text \cite{barocas2023fairness,li2023implicit}.
+
+\paragraph{Metric definitions.}
+Let $w(x)$ be the word count of response $x$ computed via whitespace tokenization after lowercasing and punctuation stripping.
+For a lexicon $\mathcal{L}$, let $c_{\mathcal{L}}(x)$ be the number of case-insensitive word or multi-word phrase matches
+using word boundaries, with phrases matched greedily.
+We report rates per 100 words:
+$\mathrm{rate}_{\mathcal{L}}(x)=100\,c_{\mathcal{L}}(x)/w(x)$.
+We compute (i) hedging rate using lexicon $\mathcal{L}_{\mathrm{hedge}}$,
+(ii) politeness rate using $\mathcal{L}_{\mathrm{polite}}$,
+and (iii) negative tone rate using $\mathcal{L}_{\mathrm{neg}}$
+(lexicons in Appendix~\ref{app:lexicons}).
+
+\textbf{Hedging frequency.}
+We define hedging as matches to $\mathcal{L}_{\mathrm{hedge}}$ using case-insensitive
+word and multi-word phrase matching with word boundaries.
+
+For a response $x$, hedging frequency is computed as
+\[
+\mathrm{Hedge}(x)=100\,\frac{c_{\mathcal{L}_{\mathrm{hedge}}}(x)}{w(x)},
+\]
+representing the number of hedge markers per 100 words.
+
+Negative tone and politeness rates are computed analogously using their respective lexicons and normalized per 100 words.
+
+All lexicons were fixed a priori and applied uniformly across models, prompts, and identities.
+
+\paragraph{Statistical Analysis.}
+For each model, responses are aligned by prompt identifier, enabling paired comparisons across identities.
+We use Wilcoxon signed-rank tests to assess identity-conditioned differences, providing a non-parametric
+inference procedure robust to distributional assumptions.
+Effect sizes are reported using Cohen’s $d$ for paired samples, providing a standardized measure of effect magnitude:
+\begin{equation}
+d = \frac{\bar{D}}{s_D}
+\end{equation}
+where $\bar{D}$ is the mean of paired differences and $s_D$ is the standard deviation of those differences.
+Effect sizes are interpreted following standard conventions: small ($d \approx 0.20$), medium ($d \approx 0.50$),
+and large ($d \approx 0.80$) effects \cite{cohen1988statistical}.
+We verified that the paired differences were approximately symmetric (median–mean alignment and absence of extreme leverage points), supporting the assumptions underlying the Wilcoxon signed-rank test.
+This paired design controls for prompt content and model variability, strengthening causal interpretation
+of identity-conditioned differences.
+We report uncorrected p-values given the exploratory nature of this analysis and our focus on theoretically motivated demographic contrasts.
+Results should be interpreted as hypothesis-generating, with replication studies needed to confirm findings.
+
+Given the exploratory nature of this audit and the number of pairwise comparisons, reported p-values should be interpreted cautiously. We use Wilcoxon signed-rank tests and paired effect sizes to characterize identity-conditioned interaction differences, but we do not treat individual significance tests as definitive evidence of universal disparities. Instead, the analysis is intended to identify candidate patterns for replication in larger-scale studies. Full pairwise results are released in the accompanying repository to reduce selective-reporting concerns.
+
+\paragraph{Confidence Intervals.}
+For each identity pair, we compute paired differences
+$D_i = m_i^{(A)} - m_i^{(B)}$ across prompts.
+We report Wilcoxon signed-rank p-values ($p_{\mathrm{W}}$) for hypothesis testing.
+The $95\%$ confidence interval for $\Delta = \mathbb{E}[D]$ is computed using a nonparametric percentile bootstrap with 10{,}000 resamples at the prompt level.
+
+
+
+\appendix
+\section{Lexicons}
+\label{app:lexicons}
+
+We use fixed lexicons for rule-based matching.
+The hedging lexicon $\mathcal{L}_{\mathrm{hedge}}$ contains 18 uncertainty markers
+(e.g., ``might'', ``may'', ``could'', ``perhaps'', ``it depends'').
+The politeness lexicon $\mathcal{L}_{\mathrm{polite}}$ contains 12 courtesy expressions
+(e.g., ``please'', ``thank you'', ``appreciate'').
+The negative tone lexicon $\mathcal{L}_{\mathrm{neg}}$ contains 15 terms indicating discouragement or risk
+(e.g., ``cannot'', ``unlikely'', ``risk'').
+Full lexicon lists are provided in the accompanying repository.
+
